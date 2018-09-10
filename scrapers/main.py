@@ -10,7 +10,6 @@ def fetch_recipes():
 
     for s in sources:
         for x in s.fetch_recipes():
-            print(astuple(x))
             yield astuple(x)
 
 
