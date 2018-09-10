@@ -1,18 +1,20 @@
 from functools import reduce
 from typing import Iterable, Optional, Set
-from utils import soup_from_url, Recipe, URL, Source
+from utils import log, soup_from_url, Recipe, URL, Source
 from bs4 import BeautifulSoup
 import re
 import operator
 
 main_page_url = "https://veg.anonymous.org.il/cat12.html"
 category_pattern = re.compile("cat[0-9]+.html")
+BASE = "https://veg.anonymous.org.il/"
 
 
 def fetch_recipes() -> Iterable[Recipe]:
     index = soup_from_url(main_page_url)
 
     for link in get_categories_links(index):
+        log(link)
         page = soup_from_url(link)
         yield from recipes_in_category(page)
 
@@ -20,7 +22,7 @@ def fetch_recipes() -> Iterable[Recipe]:
 def get_categories_links(main_page: BeautifulSoup) -> Set[URL]:
     def all_links():
         for tag in main_page.find_all(href=category_pattern):
-            yield "https://veg.anonymous.org.il/" + tag.attrs["href"]
+            yield BASE + tag.attrs["href"]
 
     # converting to set to mitigate duplicates
     return set(all_links())
@@ -35,7 +37,8 @@ def recipes_in_category(category_page: BeautifulSoup) -> Iterable[Recipe]:
 
 
 def parse_recipe(url: URL, title: str) -> Recipe:
-    page = soup_from_url(url)
+    log(url)
+    page = soup_from_url(BASE + url)
 
     def ingredients_gen():
         for ing in page.find_all(class_="ingredient"):
@@ -59,3 +62,4 @@ def find_recipe_thumbnail(recipe_page: BeautifulSoup) -> Optional[URL]:
     if image_div:
         return image_div.find("img").attrs["src"]
     return None
+

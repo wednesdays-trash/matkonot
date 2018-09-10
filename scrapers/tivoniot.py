@@ -1,5 +1,5 @@
 from typing import Iterable
-from utils import soup_from_url, Recipe, Source
+from utils import log, soup_from_url, Recipe, Source
 from bs4 import BeautifulSoup
 import itertools
 
@@ -10,6 +10,7 @@ base_page_url = "https://vegansontop.co.il/category/vegan-recipes/page/{page_num
 
 def fetch_recipes() -> Iterable[Recipe]:
     for i in itertools.count(start=1):
+        log("page number %d" % i)
         current_page = sfu(base_page_url.format(page_num=i))
 
         if is_page_empty(current_page):
@@ -20,9 +21,10 @@ def fetch_recipes() -> Iterable[Recipe]:
 
 def get_recipes(page: BeautifulSoup) -> Iterable[Recipe]:
     for tag in page.find_all(class_="post"):
-        a_tag = page.find("h2").find("a")
+        log(tag)
+        a_tag = tag.find("h2").find("a")
         link = a_tag.attrs["href"]
-        page_img = page.find(class_="pageim")
+        page_img = a_tag.find(class_="pageim")
 
         yield Recipe(
             title=a_tag.text,
@@ -33,4 +35,5 @@ def get_recipes(page: BeautifulSoup) -> Iterable[Recipe]:
 
 
 def is_page_empty(page: BeautifulSoup) -> bool:
-    return "לא נמצא" in page
+    return "לא נמצא" in page.text
+
