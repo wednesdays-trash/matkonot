@@ -1,5 +1,5 @@
 import sqlite3
-from dataclasses import astuple
+import dataclasses
 
 import anonymous
 import tivoniot
@@ -9,8 +9,8 @@ def fetch_recipes():
     sources = [tivoniot, anonymous]
 
     for s in sources:
-        for x in s.fetch_recipes():
-            yield astuple(x)
+        for recipe in s.fetch_recipes():
+            yield dataclasses.astuple(recipe)
 
 
 if __name__ == "__main__":
