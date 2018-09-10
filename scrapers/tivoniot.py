@@ -21,9 +21,9 @@ def fetch_recipes() -> Iterable[Recipe]:
 
 def get_recipes(page: BeautifulSoup) -> Iterable[Recipe]:
     for tag in page.find_all(class_="post"):
-        log(tag)
         a_tag = tag.find("h2").find("a")
         link = a_tag.attrs["href"]
+        log(link)
         page_img = a_tag.find(class_="pageim")
 
         yield Recipe(
