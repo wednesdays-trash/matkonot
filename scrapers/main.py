@@ -6,7 +6,7 @@ import tivoniot
 
 
 def fetch_recipes():
-    sources = [tivoniot, anonymous]
+    sources = [anonymous, tivoniot]
 
     for s in sources:
         for recipe in s.fetch_recipes():

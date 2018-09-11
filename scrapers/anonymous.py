@@ -22,7 +22,7 @@ def fetch_recipes() -> Iterable[Recipe]:
 def get_categories_links(main_page: BeautifulSoup) -> Set[URL]:
     def all_links():
         for tag in main_page.find_all(href=category_pattern):
-            yield BASE + tag.attrs["href"]
+            yield tag.attrs["href"]
 
     # converting to set to mitigate duplicates
     return set(all_links())
