@@ -45,10 +45,14 @@ let find_recipes_with_ingredient ing db =
     let result = Base.Linked_queue.create () in
 
     while Sqlite3.step statement == Sqlite3.Rc.ROW do
-        Sqlite3.row_data statement
-            |> (fun arr -> Array.get arr 1)
-            |> Sqlite3.Data.to_string
-            |> fun url -> Base.Linked_queue.enqueue result url
+        let data = Sqlite3.row_data statement in
+        let get i = Array.get data i |> Sqlite3.Data.to_string in
+        { title = get 0;
+          url = get 1;
+          ingredients = get 2;
+          thumbnail_url = get 3;
+          source = get 4;
+        } |> fun recipe -> Base.Linked_queue.enqueue result recipe
     done;
 
     Base.Linked_queue.to_list result
@@ -66,8 +70,26 @@ let server handler =
     Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
 
+let create_page recipes =
+    let create_link recipe =
+        print_endline recipe.title;
+        Printf.sprintf "<li><a href=%s>%s</a></li>" recipe.url recipe.title
+    in
+    let body = List.map create_link recipes |> String.concat "" in
+    "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+    <html>
+        <body>
+            <ul dir='rtl'>" 
+                ^ body ^
+           "</ul>
+        </body>
+    </html>"
+
+
 let () =
     let db = Sqlite3.db_open "matkonot.db" in
+
+    let headers = Cohttp.Header.init_with "Content-Type" "text/html; charset=utf-8" in
 
     let request_handler req =
         let body = req 
@@ -78,9 +100,9 @@ let () =
             |> (function
                 | Ok ing -> find_recipes_with_ingredient ing db
                 | Error _ -> [])
-            |> Construct_html.create_page
+            |> create_page
         in
-        Server.respond_string ~status:`OK ~body ()
+        Server.respond_string ~headers ~status:`OK ~body ()
     in
 
     server request_handler |> Lwt_main.run |> ignore
