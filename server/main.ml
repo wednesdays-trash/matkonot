@@ -28,13 +28,13 @@ let is_valid_char chr =
 
 
 let validate_input input =
-    let all_letters = input
+    let all_chars_are_valid = input
         |> String.to_seq
         |> Seq.map is_valid_char
         |> Seq.fold_left (fun a b -> if a && b then true else false) true
     in
 
-    if all_letters
+    if all_chars_are_valid
         then Ok input 
         else Error (BadInput input)
 
@@ -74,12 +74,14 @@ let () =
             |> Request.uri 
             |> Uri.to_string
             |> ingredient_from_uri
-            |> fun ingredient -> find_recipes_with_ingredient ingredient db
-            |> String.concat "\n"
+            |> validate_input
+            |> (function
+                | Ok ing -> find_recipes_with_ingredient ing db
+                | Error _ -> [])
+            |> Construct_html.create_page
         in
         Server.respond_string ~status:`OK ~body ()
     in
-
 
     server request_handler |> Lwt_main.run |> ignore
 
