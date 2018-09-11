@@ -72,7 +72,6 @@ let server handler =
 
 let create_page recipes =
     let create_link recipe =
-        print_endline recipe.title;
         Printf.sprintf "<li><a href=%s>%s</a></li>" recipe.url recipe.title
     in
     let body = List.map create_link recipes |> String.concat "" in
