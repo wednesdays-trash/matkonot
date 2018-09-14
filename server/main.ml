@@ -1,8 +1,15 @@
 open Cohttp_lwt_unix
+open Base.Result.Monad_infix
+
+let database_file_name = "matkonot.db"
+let index_file_name = "index.html"
+let port = 3222
 
 
 type error =
     | BadInput of string
+    | NoResultsForIngredient of string
+    | UnknownPage of string
 
 
 type recipe =
@@ -14,35 +21,38 @@ type recipe =
     }
 
 
-let print_error err = match err with
-    | BadInput input -> Printf.printf "Bad Input: %s\n" input
+let show_error err = 
+    let fmt = Printf.sprintf in
+    match err with
+    | BadInput input -> fmt "Bad Input: %s\n" input
+    | NoResultsForIngredient ingred -> fmt "No recipes including %s were found :(" ingred
+    | UnknownPage uri -> fmt "This URL (%s) doesn't lead to anywhere interesting" uri
 
 
-let valid_chars =
-    "אבגדהוזחטיכלמנסעפצקרשת'"
-        |> Base.String.to_list
+module Validation = struct
+    let valid_chars =
+        Base.String.to_list "אבגדהוזחטיכלמנסעפצקרשת'םףץך"
+
+    let is_valid_char chr =
+        List.exists ((==) chr) valid_chars
+
+    let validate_input input =
+        let all_chars_are_valid = input
+            |> String.to_seq
+            |> Seq.map is_valid_char
+            |> Seq.fold_left (fun a b -> if a && b then true else false) true
+        in
+
+        if all_chars_are_valid
+            then Ok input 
+            else Error (BadInput input)
+end
 
 
-let is_valid_char chr =
-    List.exists ((==) chr) valid_chars
-
-
-let validate_input input =
-    let all_chars_are_valid = input
-        |> String.to_seq
-        |> Seq.map is_valid_char
-        |> Seq.fold_left (fun a b -> if a && b then true else false) true
-    in
-
-    if all_chars_are_valid
-        then Ok input 
-        else Error (BadInput input)
-
-
-let find_recipes_with_ingredient ing db =
-    let query = Printf.sprintf "SELECT * FROM recipes WHERE INSTR(ingredients, '%s')" ing in
+let find_recipes_with_ingredient ingred ~db =
+    let query = Printf.sprintf "SELECT * FROM recipes WHERE INSTR(ingredients, '%s')" ingred in
     let statement = Sqlite3.prepare db query in
-    let result = Base.Linked_queue.create () in
+    let recipes = Base.Linked_queue.create () in
 
     while Sqlite3.step statement == Sqlite3.Rc.ROW do
         let data = Sqlite3.row_data statement in
@@ -52,22 +62,18 @@ let find_recipes_with_ingredient ing db =
           ingredients = get 2;
           thumbnail_url = get 3;
           source = get 4;
-        } |> fun recipe -> Base.Linked_queue.enqueue result recipe
+        } |> fun recipe -> Base.Linked_queue.enqueue recipes recipe
     done;
 
-    Base.Linked_queue.to_list result
-
-
-let ingredient_from_uri uri = uri
-    |> Uri.pct_decode
-    |> String.split_on_char '/'
-    |> List.rev
-    |> List.hd
+    let result = Base.Linked_queue.to_list recipes in
+    if List.length result > 0
+        then Ok result
+        else Error (NoResultsForIngredient ingred)
 
 
 let server handler =
     let callback = fun _ req _ -> handler req in
-    Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
+    Server.create ~mode:(`TCP (`Port port)) (Server.make ~callback ())
 
 
 let create_page recipes =
@@ -85,24 +91,29 @@ let create_page recipes =
     </html>"
 
 
-let () =
-    let db = Sqlite3.db_open "matkonot.db" in
-
+let run_server () =
+    let db = Sqlite3.db_open database_file_name in
     let headers = Cohttp.Header.init_with "Content-Type" "text/html; charset=utf-8" in
 
     let request_handler req =
-        let body = req 
-            |> Request.uri 
-            |> Uri.to_string
-            |> ingredient_from_uri
-            |> validate_input
+        let uri = Request.uri req in
+        match Uri.get_query_param uri "query" with
+        | None -> Server.respond_file ~headers ~fname:index_file_name ()
+        | Some ing -> Server.respond_string ~headers ~status:`OK () ~body:(
+            ing
+            |> Validation.validate_input
+            >>= find_recipes_with_ingredient ~db
             |> (function
-                | Ok ing -> find_recipes_with_ingredient ing db
-                | Error _ -> [])
-            |> create_page
-        in
-        Server.respond_string ~headers ~status:`OK ~body ()
+                | Ok recipes -> create_page recipes
+                | Error e -> show_error e))
     in
 
+    print_endline ("Running server on http://localhost:" ^ string_of_int port);
     server request_handler |> Lwt_main.run |> ignore
+
+
+let () =
+    if not (Sys.file_exists database_file_name)
+        then print_endline ("No database found (expecting a file called " ^ database_file_name ^ ").")
+        else run_server ()
 
