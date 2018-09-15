@@ -49,7 +49,7 @@ let show_error err =
 
 module Validation = struct
     let valid_chars =
-        Base.String.to_list "אבגדהוזחטיכלמנסעפצקרשת'םףץךן"
+        Base.String.to_list "אבגדהוזחטיכלמנסעפצקרשת'םףץךן "
 
     let is_valid_char chr =
         List.exists ((==) chr) valid_chars
