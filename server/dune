@@ -1,9 +1,8 @@
 (executable
  (name main)
  (libraries
-   core
+   containers
    lwt
    cohttp
    cohttp-lwt-unix
-   sqlite3)
- (preprocess (pps ppx_jane)))
+   sqlite3))
