@@ -99,22 +99,28 @@ let create_search_page template title recipes =
 
 let run_server () =
     let db = Sqlite3.db_open database_file_name in
+
     let headers = Cohttp.Header.init_with "Content-Type" "text/html; charset=utf-8" in
-    
-    let file_resp uri = match Uri.path uri with
-        | "/" -> Matkonot_pages.index
-        | _ -> Matkonot_pages.error_404 in 
-    let request_handler req =
-        let uri = Request.uri req in
-        match Uri.get_query_param uri "query" with
-        | None -> Server.respond_string ~headers ~status:`OK ~body:(file_resp uri) ()
-        | Some ing -> Server.respond_string ~headers ~status:`OK () ~body:(
-            ing
+
+    let make_body ingredient =
+        ingredient
             |> Validation.validate_input
             >>= find_recipes_with_ingredient ~db
             |> (function
-                | Ok recipes -> create_search_page Matkonot_pages.search ing recipes
-                | Error e -> show_error e))
+                | Ok recipes -> create_search_page Matkonot_pages.search ingredient recipes
+                | Error e -> show_error e)
+    in
+    
+    let file_resp uri = match Uri.path uri with
+        | "/" -> Matkonot_pages.index
+        | _ -> Matkonot_pages.error_404
+    in 
+
+    let request_handler req =
+        let uri = Request.uri req in
+        match Uri.get_query_param uri "query" with
+        | Some ing -> Server.respond_string ~headers ~status:`OK ~body:(make_body ing) ()
+        | None     -> Server.respond_string ~headers ~status:`OK ~body:(file_resp uri) ()
     in
 
     print_endline ("Running server on http://localhost:" ^ string_of_int port);
