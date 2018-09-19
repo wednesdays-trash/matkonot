@@ -9,11 +9,14 @@
     <style>{{css}}</style>
 </head>
 <body>
-    <form dir="rtl">
-        <input type="text" name="query">
-        <input type="submit" value="נו">
-    </form>
-
+    <div class="container">
+        <form dir="rtl">
+            <div class="row">
+                <input class="column" type="text" name="query">
+                <input class="column-50" type="submit" value="נו">
+            </div>
+        </form>
+    </div>
     <p>
         <ul dir="rtl">
 {{results}}
