@@ -1,8 +1,11 @@
 import sqlite3
 import dataclasses
+import time
 
 import anonymous
 import tivoniot
+
+REQUEST_INTERVAL_SECONDS = 3
 
 
 def fetch_recipes():
@@ -10,6 +13,7 @@ def fetch_recipes():
 
     for s in sources:
         for recipe in s.fetch_recipes():
+            time.sleep(REQUEST_INTERVAL_SECONDS)
             yield dataclasses.astuple(recipe)
 
 

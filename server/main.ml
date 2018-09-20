@@ -108,12 +108,12 @@ let run_server () =
             >>= find_recipes_with_ingredient ~db
             |> (function
                 | Ok recipes -> create_search_page Matkonot_pages.search ingredient recipes
-                | Error e -> show_error e)
+                | Error e    -> show_error e)
     in
 
     let file_resp uri = match Uri.path uri with
         | "/" -> Matkonot_pages.index
-        | _ -> Matkonot_pages.error_404
+        | _   -> Matkonot_pages.error
     in 
 
     let request_handler req =
