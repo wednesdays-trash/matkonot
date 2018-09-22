@@ -14,7 +14,8 @@ def fetch_recipes() -> Iterable[Recipe]:
     index = soup_from_url(main_page_url)
 
     for link in get_categories_links(index):
-        log(link)
+        link = (BASE + link) if "https" not in link else link
+        log("category: " + link)
         page = soup_from_url(link)
         yield from recipes_in_category(page)
 
@@ -37,7 +38,7 @@ def recipes_in_category(category_page: BeautifulSoup) -> Iterable[Recipe]:
 
 
 def parse_recipe(url: URL, title: str) -> Recipe:
-    log(url)
+    log("recipe: " + url)
     page = soup_from_url(BASE + url)
 
     def ingredients_gen():
