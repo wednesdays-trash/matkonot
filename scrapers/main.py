@@ -5,7 +5,7 @@ import time
 from itertools import chain
 
 from typing import Callable, List
-from utils import Recipe
+from utils import Recipe, log
 
 import anonymous
 import tivoniot
@@ -17,14 +17,10 @@ def run_module(module) -> Callable[[], List[Recipe]]:
     def result_func():
         result = []
 
-        c = 0
         for recipe in module.fetch_recipes():
-            c += 1
+            log("Scraping %s" % recipe.url)
             time.sleep(REQUEST_INTERVAL_SECONDS)
-            print(recipe.url)
             result.append(dataclasses.astuple(recipe))
-            if c == 2:
-                break
 
         return result
 

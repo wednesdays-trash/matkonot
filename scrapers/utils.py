@@ -1,15 +1,16 @@
-from bs4 import BeautifulSoup
 from dataclasses import dataclass
 import inspect
 import logging
-import requests
 from typing import Any
+from bs4 import BeautifulSoup
+import requests
 
 LOG_FILE_NAME = "log"
-parser = "html.parser"
+PARSER = "html.parser"
 URL = str
 
 
+@dataclass
 class Source:
     ANONYMOUS = "אנונימוס"
     TIVONIOT = "טבעוניות נהנות יותר"
@@ -29,10 +30,10 @@ def soup_from_url(url: URL) -> BeautifulSoup:
         url,
         headers={
             "user-agent": "Mozilla/5.0 (X11; Linux x86_64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko)"
-            "Chrome/65.0.3325.181 Safari/537.36"
+                          "AppleWebKit/537.36 (KHTML, like Gecko)"
+                          "Chrome/65.0.3325.181 Safari/537.36"
         })
-    return BeautifulSoup(resp.text, parser)
+    return BeautifulSoup(resp.text, PARSER)
 
 
 def find_first(pred, coll):
@@ -61,4 +62,3 @@ def log(message: Any) -> None:
 
     message_with_tag = "%s: %s" % (caller_name, str(message))
     logger.debug(message_with_tag)
-

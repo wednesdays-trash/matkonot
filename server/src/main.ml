@@ -28,11 +28,11 @@ type matkonot_pages =
 
 
 let show_error err = 
-  let fmt = Printf.sprintf in
+  let mk = Matkonot_pages.make_error_page in
   match err with
-  | BadInput input -> fmt "Bad Input: %s\n" input
-  | NoResultsForIngredient ingred -> fmt "No recipes including %s were found :(" ingred
-  | UnknownPage uri -> fmt "This URL (%s) doesn't lead to anywhere interesting" uri
+  | BadInput input                -> mk "חרא קלט: %s" input
+  | NoResultsForIngredient ingred -> mk "לא מצאתי מתכונים עם %s :(" ingred
+  | UnknownPage _                 -> mk "404 חברס"
 
 
 module Validation : sig
@@ -119,7 +119,7 @@ let run_server () =
 
   let file_resp uri = match Uri.path uri with
     | "/" -> Matkonot_pages.index
-    | _   -> Matkonot_pages.make_error_page "?? 404 חברים"  
+    | uri -> show_error (UnknownPage uri)
   in 
 
   let request_handler req =
