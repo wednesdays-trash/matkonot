@@ -1,17 +1,18 @@
 from functools import reduce
 from typing import Iterable, Optional, Set
-from utils import log, soup_from_url, Recipe, URL, Source
-from bs4 import BeautifulSoup
-import re
 import operator
+import re
+from bs4 import BeautifulSoup
+from utils import log, soup_from_url, Recipe, URL, Source
 
-main_page_url = "https://veg.anonymous.org.il/cat12.html"
-category_pattern = re.compile("cat[0-9]+.html")
+
+MAIN_PAGE_URL = "https://veg.anonymous.org.il/cat12.html"
+CATEGORY_PATTERN = re.compile("cat[0-9]+.html")
 BASE = "https://veg.anonymous.org.il/"
 
 
 def fetch_recipes() -> Iterable[Recipe]:
-    index = soup_from_url(main_page_url)
+    index = soup_from_url(MAIN_PAGE_URL)
 
     for link in get_categories_links(index):
         link = (BASE + link) if "https" not in link else link
@@ -22,7 +23,7 @@ def fetch_recipes() -> Iterable[Recipe]:
 
 def get_categories_links(main_page: BeautifulSoup) -> Set[URL]:
     def all_links():
-        for tag in main_page.find_all(href=category_pattern):
+        for tag in main_page.find_all(href=CATEGORY_PATTERN):
             yield tag.attrs["href"]
 
     # converting to set to mitigate duplicates
@@ -31,10 +32,10 @@ def get_categories_links(main_page: BeautifulSoup) -> Set[URL]:
 
 def recipes_in_category(category_page: BeautifulSoup) -> Iterable[Recipe]:
     for item in category_page.find_all(class_="subcategoryItem"):
-        a = item.find("a")
+        a_tag = item.find("a")
 
-        yield parse_recipe(url=a.attrs["href"],
-                           title=a.text.strip())
+        yield parse_recipe(url=a_tag.attrs["href"],
+                           title=a_tag.text.strip())
 
 
 def parse_recipe(url: URL, title: str) -> Recipe:
@@ -63,4 +64,3 @@ def find_recipe_thumbnail(recipe_page: BeautifulSoup) -> Optional[URL]:
     if image_div:
         return image_div.find("img").attrs["src"]
     return None
-

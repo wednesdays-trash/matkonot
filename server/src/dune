@@ -2,7 +2,5 @@
  (name main)
  (libraries
    containers
-   lwt
-   cohttp
    cohttp-lwt-unix
    sqlite3))
