@@ -18,7 +18,6 @@ def run_module(module) -> Callable[[], List[Recipe]]:
         result = []
 
         for recipe in module.fetch_recipes():
-            log("Scraping %s" % recipe.url)
             time.sleep(REQUEST_INTERVAL_SECONDS)
             result.append(dataclasses.astuple(recipe))
 
