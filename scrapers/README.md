@@ -14,4 +14,4 @@ python main.py
 ```
 
 This will get the party started and launch some parallel scrapers.  
-You can follow their progress with `tail -f log`. Once the fetching has ended, a file named `matkonot.db` will appear at this very directory. It should be placed under `../server/` before launching the server.
+You can follow their progress with `tail -f log`. Once the fetching has ended, a file named `recipes_DD_MM_YYYY.db` will appear at this very directory. It should be placed under `../server/` before launching the server.

@@ -17,4 +17,4 @@ dune build src/main.exe
 ``` shell
 _build/default/src/main.exe
 ```
-This will run an instance at localhost:3222. Make sure to have a `matkonot.db` (read ../scrapers/README.md) file in the same directory!
+This will run an instance at localhost:3222. Make sure to have a `recipes_DD_MM_YYYY.db` (read ../scrapers/README.md) file in the same directory!
