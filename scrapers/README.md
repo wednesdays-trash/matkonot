@@ -1,4 +1,4 @@
-Requires Python 3.7.0 or above. I personally like (pyenv)[https://github.com/pyenv/pyenv#installation] for managing versions.
+Requires Python 3.7.0 or above. I personally like [pyenv](https://github.com/pyenv/pyenv#installation) for managing versions.
 
 ## Setup
 ``` shell
