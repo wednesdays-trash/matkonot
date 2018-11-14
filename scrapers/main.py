@@ -1,3 +1,4 @@
+from datetime import datetime
 import asyncio
 import sqlite3
 import dataclasses
@@ -5,7 +6,7 @@ import time
 from itertools import chain
 
 from typing import Callable, List
-from utils import Recipe, log
+from utils import Recipe
 
 import anonymous
 import tivoniot
@@ -36,10 +37,13 @@ async def main():
 
     recipes_nested = await asyncio.gather(*map(create_task, sources))
 
-    conn = sqlite3.connect("matkonot.db")
+    date = datetime.now().strftime("%d_%m_%Y")
+
+    conn = sqlite3.connect("recipes_%s.db" % date)
     cur = conn.cursor()
 
     recipes = chain.from_iterable(recipes_nested)
+    cur.execute("CREATE TABLE recipes (title text, url text, ingredients text, thumbnail_url text, source text)")
     cur.executemany("INSERT INTO recipes VALUES (?,?,?,?,?)", recipes)
     conn.commit()
     conn.close()

@@ -13,5 +13,5 @@ pip install -r requirements
 python main.py
 ```
 
-This will get the party started and launch some parallel scrapers. You can follow their progress with `tail -f log`.
-A cool `matkonot.db` file will appear at the directory once the fetching has ended, which should be placed under `../server/` before launching the server.
+This will get the party started and launch some parallel scrapers.  
+You can follow their progress with `tail -f log`. Once the fetching has ended, a file named `matkonot.db` will appear at this very directory. It should be placed under `../server/` before launching the server.
