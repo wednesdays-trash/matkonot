@@ -1,7 +1,7 @@
 Requires Python 3.7.0 or above. I personally like (pyenv)[https://github.com/pyenv/pyenv#installation] for managing versions.
 
 ## Setup
-``` python
+``` shell
 pyenv install 3.7.0
 pyenv virtualenv 3.7.0 matkonot
 pyenv activate matkonot
@@ -9,7 +9,7 @@ pip install -r requirements
 ```
 
 ## Run
-``` python
+``` shell
 python main.py
 ```
 
